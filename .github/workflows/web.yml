@@ -1,0 +1,42 @@
+name: Web CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/web.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Build (Cloudflare Pages preset)
+        env:
+          NITRO_PRESET: cloudflare-pages
+          # Frontend calls /api relatively (same-origin); the Pages worker proxies /api/**
+          # to the backend behind the Cloudflare tunnel. VITE_API_URL stays empty.
+          API_PROXY_TARGET: ${{ vars.API_INTERNAL_URL }}
+        run: npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: web
+          # Nitro's cloudflare-pages output root (contains _worker.js + _routes.json + public/).
+          command: pages deploy dist/analog --project-name=${{ vars.CF_PAGES_PROJECT }}

@@ -1,0 +1,94 @@
+# Cloudflare Tunnel (cloudflared) running in-cluster. Exposes two things without
+# opening any inbound ports on your network:
+#   1. the public API   -> api.<yourdomain>        (HTTP)
+#   2. the k3s API server -> k8s.<yourdomain>      (TCP, for CI `kubectl`)
+#
+# ── One-time setup (on a machine with cloudflared + `cloudflared login`) ──────────
+#   cloudflared tunnel create personal-website
+#     → writes ~/.cloudflared/<TUNNEL_ID>.json  (the credentials)
+#   cloudflared tunnel route dns personal-website api.yourdomain.com
+#   cloudflared tunnel route dns personal-website k8s.yourdomain.com
+#
+#   # store the credentials as a k8s secret:
+#   kubectl -n personal-website create secret generic cloudflared-credentials \
+#     --from-file=credentials.json=$HOME/.cloudflared/<TUNNEL_ID>.json
+#
+#   Then replace <TUNNEL_ID> and the hostnames below and `kubectl apply -f`.
+#
+#   Lock down k8s.yourdomain.com with a Zero Trust Access policy + a SERVICE TOKEN,
+#   and give CI that token (see api.yml / README).
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: personal-website
+data:
+  config.yaml: |
+    tunnel: <TUNNEL_ID>
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    no-autoupdate: true
+    metrics: 0.0.0.0:2000
+    ingress:
+      # API origin — only the Cloudflare Pages worker calls this (browser never sees it).
+      # Lock it behind a Zero Trust Access policy + service token.
+      - hostname: api-internal.yourdomain.com
+        service: http://api:80
+
+      # k3s API server, exposed as raw TCP so kubectl keeps end-to-end TLS.
+      # Reach it from CI with: cloudflared access tcp --hostname k8s.yourdomain.com --url 127.0.0.1:6443
+      - hostname: k8s.yourdomain.com
+        service: tcp://kubernetes.default.svc:443
+
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: personal-website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
+        - name: creds
+          secret:
+            secretName: cloudflared-credentials

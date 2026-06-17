@@ -1,0 +1,10 @@
+# Local reverse proxy for same-origin testing (mirrors the production Cloudflare setup).
+# Browse the app at http://localhost:8080 — /api/* hits the API, everything else the web SSR.
+:80 {
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -128,3 +128,11 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# --- .NET ---
+[Bb]in/
+[Oo]bj/
+*.user
+# Local secrets / appsettings overrides (keep appsettings.json template, ignore local)
+appsettings.Local.json
+api/**/appsettings.Development.json

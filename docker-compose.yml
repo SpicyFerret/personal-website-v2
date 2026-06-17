@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: pw_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pwuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pwpass}
+      POSTGRES_DB: ${POSTGRES_DB:-personalwebsite}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pwuser} -d ${POSTGRES_DB:-personalwebsite}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: pw_adminer
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    depends_on:
+      - postgres
+
+  api:
+    build:
+      context: ./api
+    image: pw-api:local
+    container_name: pw_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-personalwebsite};Username=${POSTGRES_USER:-pwuser};Password=${POSTGRES_PASSWORD:-pwpass}"
+      Jwt__Key: "${JWT_KEY:-dev-only-secret-change-me-min-32-chars-long}"
+      Admin__Email: "${ADMIN_EMAIL:-danilo@neumannmarques.com}"
+      Admin__Password: "${ADMIN_PASSWORD:-ChangeMe123!}"
+      R2__Endpoint: "${R2_ENDPOINT:-}"
+      R2__AccessKey: "${R2_ACCESS_KEY:-}"
+      R2__SecretKey: "${R2_SECRET_KEY:-}"
+      R2__Bucket: "${R2_BUCKET:-}"
+      R2__PublicBaseUrl: "${R2_PUBLIC_BASE_URL:-}"
+    ports:
+      - "5256:8080"
+
+  web:
+    build:
+      context: ./web
+      args:
+        # Empty = relative /api (same-origin via the proxy below).
+        VITE_API_URL: "${VITE_API_URL-}"
+        API_PROXY_TARGET: "${API_PROXY_TARGET:-http://api:8080}"
+    image: pw-web:local
+    container_name: pw_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      PORT: "3000"
+      HOST: "0.0.0.0"
+    ports:
+      - "4000:3000"
+
+  # Local reverse proxy: single same-origin entrypoint that mirrors the production
+  # setup (/api -> api, everything else -> web). Test the app at http://localhost:8080
+  proxy:
+    image: caddy:2-alpine
+    container_name: pw_proxy
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+
+volumes:
+  pgdata:
