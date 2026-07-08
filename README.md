@@ -163,10 +163,10 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 
 | Secret | Used by | Where it comes from |
 |--------|---------|---------------------|
-| `CLOUDFLARE_API_TOKEN` | infra + web | custom token — Account: Cloudflare Tunnel:Edit, Access: Apps and Policies:Edit, Access: Service Tokens:Edit, Workers R2 Storage:Edit, Cloudflare Pages:Edit · Zone: DNS:Edit (specific zone) |
+| `CLOUDFLARE_API_TOKEN` | infra + web | custom token — Account: Cloudflare Tunnel:Edit, Access: Apps and Policies:Edit, Access: Service Tokens:Edit, Workers R2 Storage:Edit, Cloudflare Pages:Edit · Zone: DNS:Edit (specific zone). Also doubles as the S3 credentials for the **state** backend (access key = token id, secret = sha256 of the token — derived automatically in the workflow). |
 | `CLOUDFLARE_ACCOUNT_ID` | infra + web | dashboard → zone overview, right sidebar |
 | `CLOUDFLARE_ZONE_ID` | infra | dashboard → zone overview, right sidebar |
-| `R2_ACCESS_KEY` / `R2_SECRET_KEY` | infra + api | dashboard → R2 → Manage R2 API Tokens (state backend + asset uploads) |
+| `R2_ACCESS_KEY` / `R2_SECRET_KEY` | api only | **after** the first infra run: dashboard → R2 → Manage R2 API Tokens → Object Read & Write **scoped to the `personal-website-assets` bucket only**. Used by the app for uploads; if unset, uploads are disabled gracefully. |
 | `GH_PAT` | infra | fine-grained PAT on this repo with **Secrets: RW + Variables: RW** (lets the infra workflow sync outputs) |
 | `KUBE_CONFIG` | api | printed (base64) at the end of `scripts/k3s-bootstrap.sh` |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | api | you choose |

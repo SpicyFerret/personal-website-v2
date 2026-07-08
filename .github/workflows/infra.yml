@@ -26,9 +26,9 @@ jobs:
       TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
       TF_VAR_github_repo: ${{ github.repository }}
-      # R2 state backend (S3-compatible)
-      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
+      # R2 state backend endpoint (S3-compatible); credentials are DERIVED from
+      # CLOUDFLARE_API_TOKEN below (access key = token id, secret = sha256 of it),
+      # so no separate R2 keys are needed for the state.
       AWS_ENDPOINT_URL_S3: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
     steps:
       - name: Require bootstrap secrets
@@ -38,10 +38,25 @@ jobs:
           [ -n '${{ secrets.CLOUDFLARE_API_TOKEN }}' ]  || { echo "::error::Secret CLOUDFLARE_API_TOKEN is not set."; ok=0; }
           [ -n '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}' ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID is not set."; ok=0; }
           [ -n '${{ secrets.CLOUDFLARE_ZONE_ID }}' ]    || { echo "::error::Secret CLOUDFLARE_ZONE_ID is not set."; ok=0; }
-          [ -n '${{ secrets.R2_ACCESS_KEY }}' ]         || { echo "::error::Secret R2_ACCESS_KEY is not set (dashboard → R2 → Manage R2 API Tokens)."; ok=0; }
-          [ -n '${{ secrets.R2_SECRET_KEY }}' ]         || { echo "::error::Secret R2_SECRET_KEY is not set (dashboard → R2 → Manage R2 API Tokens)."; ok=0; }
           [ -n '${{ secrets.GH_PAT }}' ]                || { echo "::error::Secret GH_PAT is not set (fine-grained PAT, this repo, Secrets:RW + Variables:RW)."; ok=0; }
           [ "$ok" = "1" ]
+
+      - name: Derive S3 credentials for the state backend
+        # Documented by Cloudflare: any API token with R2 permissions doubles as
+        # S3 credentials — Access Key ID = the token's ID, Secret = SHA-256(token).
+        working-directory: .
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -eu
+          TOKEN_ID=$(curl -sf -H "Authorization: Bearer $CF_API_TOKEN" \
+            https://api.cloudflare.com/client/v4/user/tokens/verify \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['result']['id'])")
+          SECRET=$(printf '%s' "$CF_API_TOKEN" | sha256sum | cut -d' ' -f1)
+          echo "::add-mask::$SECRET"
+          echo "AWS_ACCESS_KEY_ID=$TOKEN_ID"     >> "$GITHUB_ENV"
+          echo "AWS_SECRET_ACCESS_KEY=$SECRET"   >> "$GITHUB_ENV"
+          echo "Derived S3 credentials from CLOUDFLARE_API_TOKEN (id $TOKEN_ID)."
 
       - uses: actions/checkout@v4
 
