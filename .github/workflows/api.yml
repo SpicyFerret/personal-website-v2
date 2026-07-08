@@ -144,5 +144,13 @@ jobs:
           kubectl apply -f k8s/postgres.yaml
           kubectl apply -f k8s/api.yaml
           kubectl apply -f k8s/cloudflared.yaml
-          kubectl -n personal-website set image deployment/api api=${{ env.IMAGE }}:sha-${{ github.sha }}
+          # Single patch = one rollout that BOTH updates the image and restarts the
+          # pods even when the image sha is unchanged (secrets are read at pod start,
+          # so secret-only changes need a restart too).
+          kubectl -n personal-website patch deployment api -p "{
+            \"spec\": {\"template\": {
+              \"metadata\": {\"annotations\": {\"deployed-at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}},
+              \"spec\": {\"containers\": [{\"name\": \"api\", \"image\": \"${{ env.IMAGE }}:sha-${{ github.sha }}\"}]}
+            }}
+          }"
           kubectl -n personal-website rollout status deployment/api --timeout=300s
