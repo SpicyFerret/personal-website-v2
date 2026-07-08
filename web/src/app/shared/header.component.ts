@@ -1,18 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../core/auth.service';
+import { ThemeService } from '../core/theme.service';
+import { SITE_NAME } from '../core/config';
+
+const THEME_ICONS = { system: 'contrast', light: 'light_mode', dark: 'dark_mode' } as const;
+const THEME_LABELS = { system: 'Theme: system', light: 'Theme: light', dark: 'Theme: dark' } as const;
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule],
+  imports: [RouterLink, RouterLinkActive, MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
     <header class="hdr">
       <div class="container hdr-inner">
         <a routerLink="/" class="brand">
-          <span class="brand-mark">DM</span>
-          <span class="brand-name">Danilo Marques</span>
+          <span class="brand-mark">{{ initials }}</span>
+          <span class="brand-name">{{ siteName }}</span>
         </a>
 
         <nav class="nav" [class.open]="menuOpen">
@@ -30,14 +36,24 @@ import { AuthService } from '../core/auth.service';
           }
         </nav>
 
-        <button
-          class="menu-btn"
-          mat-icon-button
-          aria-label="Toggle menu"
-          (click)="menuOpen = !menuOpen"
-        >
-          <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
-        </button>
+        <div class="actions">
+          <button
+            mat-icon-button
+            [matTooltip]="themeLabel()"
+            aria-label="Toggle theme"
+            (click)="theme.cycle()"
+          >
+            <mat-icon>{{ themeIcon() }}</mat-icon>
+          </button>
+          <button
+            class="menu-btn"
+            mat-icon-button
+            aria-label="Toggle menu"
+            (click)="menuOpen = !menuOpen"
+          >
+            <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+          </button>
+        </div>
       </div>
     </header>
   `,
@@ -55,6 +71,7 @@ import { AuthService } from '../core/auth.service';
       align-items: center;
       justify-content: space-between;
       height: 64px;
+      gap: 0.5rem;
     }
     .brand {
       display: flex;
@@ -87,6 +104,7 @@ import { AuthService } from '../core/auth.service';
     }
     .nav a:hover { color: var(--pw-text); text-decoration: none; }
     .nav a.active { color: var(--pw-text); }
+    .actions { display: flex; align-items: center; }
     .menu-btn { display: none; }
 
     @media (max-width: 760px) {
@@ -110,6 +128,14 @@ import { AuthService } from '../core/auth.service';
 })
 export class HeaderComponent {
   readonly auth = inject(AuthService);
+  readonly theme = inject(ThemeService);
+
+  readonly siteName = SITE_NAME;
+  readonly initials = SITE_NAME.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+
+  readonly themeIcon = computed(() => THEME_ICONS[this.theme.mode()]);
+  readonly themeLabel = computed(() => THEME_LABELS[this.theme.mode()]);
+
   menuOpen = false;
 
   readonly links = [

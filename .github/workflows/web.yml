@@ -38,6 +38,12 @@ jobs:
           # Frontend calls /api relatively (same-origin); the Pages worker proxies /api/**
           # to the backend behind the Cloudflare tunnel. VITE_API_URL stays empty.
           API_PROXY_TARGET: ${{ vars.API_INTERNAL_URL }}
+          # Site identity & social links (repo Variables; defaults live in config.ts)
+          VITE_SITE_NAME: ${{ vars.SITE_NAME }}
+          VITE_SOCIAL_GITHUB: ${{ vars.SOCIAL_GITHUB }}
+          VITE_SOCIAL_LINKEDIN: ${{ vars.SOCIAL_LINKEDIN }}
+          VITE_SOCIAL_INSTAGRAM: ${{ vars.SOCIAL_INSTAGRAM }}
+          VITE_CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
         run: npm run build
       - name: Flatten static assets to the deploy root
         # Nitro's cloudflare-pages output keeps static files under public/, but

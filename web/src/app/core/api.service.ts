@@ -78,6 +78,17 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/api/contact/admin/${id}`);
   }
 
+  // ---------- Site content (key → value copy, editable in admin) ----------
+  getContent(): Observable<Record<string, string>> {
+    return this.http.get<Record<string, string>>(`${this.base}/api/content`);
+  }
+  saveContent(key: string, value: string): Observable<unknown> {
+    return this.http.put(`${this.base}/api/content/${encodeURIComponent(key)}`, { value });
+  }
+  deleteContent(key: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/content/${encodeURIComponent(key)}`);
+  }
+
   // ---------- Assets ----------
   uploadAsset(file: File, prefix = 'uploads'): Observable<{ url: string }> {
     const form = new FormData();

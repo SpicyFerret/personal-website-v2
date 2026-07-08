@@ -8,10 +8,23 @@
 export const API_BASE_URL: string =
   (import.meta.env['VITE_API_URL'] as string | undefined) ?? '';
 
-/** Public social / contact links shown across the site. */
+/** Build-time env with a fallback (repo Variables → web.yml → VITE_*). */
+function env(key: string, fallback: string): string {
+  const value = import.meta.env[key] as string | undefined;
+  return value && value.length > 0 ? value : fallback;
+}
+
+/** Site identity — override via repo variable SITE_NAME. */
+export const SITE_NAME = env('VITE_SITE_NAME', 'Danilo Marques');
+
+/**
+ * Social / contact links — override via repo variables
+ * SOCIAL_GITHUB, SOCIAL_LINKEDIN, SOCIAL_INSTAGRAM, CONTACT_EMAIL.
+ * An empty override hides the link in the UI.
+ */
 export const SOCIAL_LINKS = {
-  github: 'https://github.com/', // TODO: set your handle
-  linkedin: 'https://linkedin.com/in/danilo-nmarques',
-  instagram: 'https://instagram.com/', // TODO: set your handle
-  email: 'danilo@neumannmarques.com',
+  github: env('VITE_SOCIAL_GITHUB', 'https://github.com/SpicyFerret'),
+  linkedin: env('VITE_SOCIAL_LINKEDIN', 'https://linkedin.com/in/danilo-nmarques'),
+  instagram: env('VITE_SOCIAL_INSTAGRAM', ''),
+  email: env('VITE_CONTACT_EMAIL', 'danilo@neumannmarques.com'),
 };

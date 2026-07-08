@@ -184,11 +184,17 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 | `R2_ENDPOINT` / `R2_BUCKET` (secrets) | R2 outputs |
 | `K8S_API_HOSTNAME` / `API_INTERNAL_URL` / `CF_PAGES_PROJECT` (variables) | tunnel hostnames + Pages project (created by tofu; site served at `<project>.pages.dev` until you attach the custom domain) |
 
-**Optional variable — custom site domain:**
+**Optional variables:**
 
 | Variable | Purpose |
 |----------|---------|
 | `SITE_DOMAIN` | **Unset/empty (default)** = site stays on `<project>.pages.dev` and existing DNS (old hosting) is untouched. To switch: ① delete the old A/AAAA/CNAME records for that hostname in the Cloudflare zone, ② set `SITE_DOMAIN` (e.g. `www.neumannmarques.com` or the apex), ③ re-run the Infra workflow — it attaches the domain to the Pages project and creates the proxied CNAME. |
+| `SITE_NAME` | Brand shown in the header/footer (default in `web/src/app/core/config.ts`). |
+| `SOCIAL_GITHUB` / `SOCIAL_LINKEDIN` / `SOCIAL_INSTAGRAM` | Social profile URLs; empty hides the link. |
+| `CONTACT_EMAIL` | Email used by the footer / contact page links. |
+
+Other personal copy (resume, home hero, stats) is edited at **`/admin` → Site content** and stored
+in PostgreSQL — the codebase ships generic defaults and no seeded content (only the admin user).
 
 `GITHUB_TOKEN` (automatic) pushes images to GHCR — no secret needed. OpenTofu state lives in the
 R2 bucket `personal-website-tfstate` — the infra workflow creates it automatically if missing

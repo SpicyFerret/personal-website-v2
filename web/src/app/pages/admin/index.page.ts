@@ -37,6 +37,11 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
           <h3>Messages</h3>
           <p class="muted">Read contact submissions.</p>
         </a>
+        <a class="tile card-surface" routerLink="/admin/content">
+          <mat-icon>edit_note</mat-icon>
+          <h3>Site content</h3>
+          <p class="muted">Resume, home hero and other personal copy.</p>
+        </a>
       </div>
     </section>
   `,

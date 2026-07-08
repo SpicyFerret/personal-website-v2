@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MatIconRegistry } from '@angular/material/icon';
 import { HeaderComponent } from './shared/header.component';
 import { FooterComponent } from './shared/footer.component';
+import { ThemeService } from './core/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -24,4 +26,12 @@ import { FooterComponent } from './shared/footer.component';
     }
   `,
 })
-export class App {}
+export class App {
+  constructor() {
+    // mat-icon defaults to the legacy "material-icons" font class; we load
+    // Material Symbols Outlined (index.html), so point the registry at it —
+    // otherwise every icon renders as its ligature text.
+    inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
+    inject(ThemeService); // instantiate so the persisted theme is applied
+  }
+}

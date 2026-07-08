@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ContactSubmission> ContactSubmissions => Set<ContactSubmission>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+    public DbSet<SiteContent> SiteContents => Set<SiteContent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,6 +53,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.Email).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<SiteContent>(e =>
+        {
+            e.HasKey(c => c.Key);
+            e.Property(c => c.Key).HasMaxLength(120);
         });
     }
 }
