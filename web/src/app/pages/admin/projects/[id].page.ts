@@ -7,9 +7,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RouteMeta } from '@analogjs/router';
+import { QuillEditorComponent } from 'ngx-quill';
 import { ApiService } from '../../../core/api.service';
 import { SaveProject } from '../../../core/models';
 import { authGuard } from '../../../core/auth.guard';
+import { QUILL_MODULES } from '../../../shared/quill-config';
 
 export const routeMeta: RouteMeta = { canActivate: [authGuard] };
 
@@ -23,6 +25,7 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,
+    QuillEditorComponent,
   ],
   template: `
     <section class="container section narrow">
@@ -45,10 +48,12 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
           <textarea matInput rows="2" formControlName="summary"></textarea>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Description (Markdown)</mat-label>
-          <textarea matInput rows="10" formControlName="description"></textarea>
-        </mat-form-field>
+        <label class="field-label">Description</label>
+        <quill-editor
+          formControlName="description"
+          [modules]="quillModules"
+          placeholder="Describe the project…"
+        ></quill-editor>
 
         <div class="two">
           <mat-form-field appearance="outline">
@@ -95,6 +100,8 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
     .actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
     .actions mat-icon { margin-right: 4px; }
     .err { color: #dc2626; }
+    .field-label { font-size: 0.85rem; color: var(--pw-muted); margin: 0.5rem 0 0.25rem; }
+    quill-editor { display: block; margin-bottom: 1rem; }
   `,
 })
 export default class AdminProjectEdit {
@@ -105,6 +112,7 @@ export default class AdminProjectEdit {
 
   private readonly id = this.route.snapshot.paramMap.get('id')!;
   readonly isNew = this.id === 'new';
+  readonly quillModules = QUILL_MODULES;
 
   readonly saving = signal(false);
   readonly error = signal('');

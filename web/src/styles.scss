@@ -113,6 +113,42 @@ h3 {
   border-radius: var(--pw-radius);
 }
 
+/* Quill rich-text editor — follow the site theme (snow.css assumes light) */
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border-color: var(--pw-border);
+  background: var(--pw-surface);
+  color: var(--pw-text);
+}
+.ql-toolbar.ql-snow {
+  border-radius: 8px 8px 0 0;
+}
+.ql-container.ql-snow {
+  border-radius: 0 0 8px 8px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+.ql-editor {
+  min-height: 180px;
+}
+.ql-snow .ql-stroke {
+  stroke: var(--pw-text);
+}
+.ql-snow .ql-fill {
+  fill: var(--pw-text);
+}
+.ql-snow .ql-picker,
+.ql-snow .ql-picker-options {
+  color: var(--pw-text);
+  background: var(--pw-surface);
+}
+.ql-snow .ql-picker-options {
+  border-color: var(--pw-border) !important;
+}
+.ql-editor.ql-blank::before {
+  color: var(--pw-muted);
+}
+
 /* Markdown content rendering */
 .markdown-body h1,
 .markdown-body h2,

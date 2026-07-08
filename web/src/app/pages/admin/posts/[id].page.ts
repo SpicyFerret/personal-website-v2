@@ -7,9 +7,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { RouteMeta } from '@analogjs/router';
+import { QuillEditorComponent } from 'ngx-quill';
 import { ApiService } from '../../../core/api.service';
 import { SaveBlogPost } from '../../../core/models';
 import { authGuard } from '../../../core/auth.guard';
+import { QUILL_MODULES } from '../../../shared/quill-config';
 
 export const routeMeta: RouteMeta = { canActivate: [authGuard] };
 
@@ -23,6 +25,7 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,
+    QuillEditorComponent,
   ],
   template: `
     <section class="container section narrow">
@@ -56,10 +59,12 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
           <input #file type="file" hidden accept="image/*" (change)="upload($event)" />
         </div>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Content (Markdown)</mat-label>
-          <textarea matInput rows="16" formControlName="content"></textarea>
-        </mat-form-field>
+        <label class="field-label">Content</label>
+        <quill-editor
+          formControlName="content"
+          [modules]="quillModules"
+          placeholder="Write your post…"
+        ></quill-editor>
 
         <mat-form-field appearance="outline">
           <mat-label>Tags (comma separated)</mat-label>
@@ -90,6 +95,8 @@ export const routeMeta: RouteMeta = { canActivate: [authGuard] };
     .actions mat-icon, .cover mat-icon { margin-right: 4px; }
     .err { color: #dc2626; }
     mat-slide-toggle { margin: 0.5rem 0; }
+    .field-label { font-size: 0.85rem; color: var(--pw-muted); margin: 0.5rem 0 0.25rem; }
+    quill-editor { display: block; margin-bottom: 1rem; }
   `,
 })
 export default class AdminPostEdit {
@@ -100,6 +107,7 @@ export default class AdminPostEdit {
 
   private readonly id = this.route.snapshot.paramMap.get('id')!;
   readonly isNew = this.id === 'new';
+  readonly quillModules = QUILL_MODULES;
 
   readonly saving = signal(false);
   readonly uploading = signal(false);

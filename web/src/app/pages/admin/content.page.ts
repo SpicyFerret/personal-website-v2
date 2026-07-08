@@ -8,8 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouteMeta } from '@analogjs/router';
+import { QuillEditorComponent } from 'ngx-quill';
 import { ApiService } from '../../core/api.service';
 import { authGuard } from '../../core/auth.guard';
+import { QUILL_MODULES } from '../../shared/quill-config';
 
 export const routeMeta: RouteMeta = { canActivate: [authGuard] };
 
@@ -21,7 +23,7 @@ interface Entry {
 
 /** Well-known keys offered as one-click templates when missing. */
 const KNOWN_KEYS: { key: string; hint: string }[] = [
-  { key: 'resume', hint: 'Resume page body (markdown)' },
+  { key: 'resume', hint: 'Resume page body (rich text)' },
   { key: 'resume.pdf', hint: 'URL of the resume PDF (optional button)' },
   { key: 'home.eyebrow', hint: 'Small line above the home title' },
   { key: 'home.title', hint: 'Home headline (HTML allowed, e.g. <span class="grad">…</span>)' },
@@ -41,13 +43,15 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
     MatInputModule,
     MatExpansionModule,
     MatTooltipModule,
+    QuillEditorComponent,
   ],
   template: `
     <section class="container section narrow">
       <a routerLink="/admin" class="muted">← Dashboard</a>
       <h1>Site content</h1>
       <p class="muted">
-        Texts that make the site yours — resume, home hero, etc. Markdown/JSON per key.
+        Texts that make the site yours — resume, home hero, etc. Rich text for long content,
+        plain text/JSON for the small keys.
       </p>
 
       <mat-accordion multi>
@@ -57,12 +61,21 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
               <mat-panel-title>{{ e.key }}</mat-panel-title>
               @if (e.dirty) { <mat-panel-description>unsaved</mat-panel-description> }
             </mat-expansion-panel-header>
-            <textarea
-              class="editor"
-              [rows]="e.key === 'resume' ? 18 : 4"
-              [(ngModel)]="e.value"
-              (ngModelChange)="e.dirty = true"
-            ></textarea>
+            @if (isRich(e)) {
+              <quill-editor
+                [modules]="quillModules"
+                [(ngModel)]="e.value"
+                (ngModelChange)="e.dirty = true"
+                placeholder="Write here…"
+              ></quill-editor>
+            } @else {
+              <textarea
+                class="editor"
+                rows="4"
+                [(ngModel)]="e.value"
+                (ngModelChange)="e.dirty = true"
+              ></textarea>
+            }
             <div class="row-actions">
               <button mat-flat-button color="primary" [disabled]="!e.dirty || saving()" (click)="save(e)">
                 <mat-icon>save</mat-icon> Save
@@ -110,6 +123,7 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
       padding: 0.8rem;
       resize: vertical;
     }
+    quill-editor { display: block; }
     .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .row-actions mat-icon, .known mat-icon, .custom mat-icon { margin-right: 4px; }
     .known { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
@@ -124,7 +138,13 @@ export default class AdminContent {
   readonly entries = signal<Entry[]>([]);
   readonly saving = signal(false);
   readonly message = signal('');
+  readonly quillModules = QUILL_MODULES;
   newKey = '';
+
+  /** Rich editor for long-form keys and anything already stored as HTML. */
+  isRich(e: Entry): boolean {
+    return e.key === 'resume' || e.value.trimStart().startsWith('<');
+  }
 
   constructor() {
     this.load();
