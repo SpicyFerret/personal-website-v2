@@ -23,9 +23,13 @@ export class MarkdownPipe implements PipeTransform {
   transform(value: string | null | undefined): SafeHtml {
     if (!value) return '';
     const trimmed = value.trimStart();
-    const html = trimmed.startsWith('<')
+    let html = trimmed.startsWith('<')
       ? value
       : (marked.parse(value, { async: false }) as string);
+
+    // Quill turns pasted spaces into &nbsp;, which never line-wraps — long
+    // sentences overflow instead of breaking. Normal spaces are what we want.
+    html = html.replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
 
     if (this.isBrowser) {
       const clean = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
