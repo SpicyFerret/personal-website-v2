@@ -39,6 +39,10 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "k3s" {
       hostname = "portainer.${var.domain}"
       service  = "http://portainer.observability.svc.cluster.local:9000"
     }
+    ingress_rule {
+      hostname = "prometheus.${var.domain}"
+      service  = "http://kps-prometheus.observability.svc.cluster.local:9090"
+    }
 
     # Catch-all (required last rule)
     ingress_rule {
@@ -68,7 +72,7 @@ resource "cloudflare_record" "k8s" {
 }
 
 resource "cloudflare_record" "observability" {
-  for_each = toset(["grafana", "portainer"])
+  for_each = toset(["grafana", "portainer", "prometheus"])
   zone_id  = var.cloudflare_zone_id
   name     = each.key
   type     = "CNAME"
@@ -108,7 +112,7 @@ resource "cloudflare_zero_trust_access_policy" "k8s_ci" {
 
 # Admin UIs (Grafana/Portainer): email one-time-PIN gate before the apps' own logins.
 resource "cloudflare_zero_trust_access_application" "observability" {
-  for_each         = toset(["grafana", "portainer"])
+  for_each         = toset(["grafana", "portainer", "prometheus"])
   account_id       = var.cloudflare_account_id
   name             = each.key
   domain           = "${each.key}.${var.domain}"
