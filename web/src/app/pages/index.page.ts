@@ -7,6 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { ApiService } from '../core/api.service';
 import { BlogPostSummary, Project } from '../core/models';
 import { SOCIAL_LINKS } from '../core/config';
+import { MarkdownPipe } from '../shared/markdown.pipe';
 
 interface Stat {
   value: string;
@@ -21,12 +22,12 @@ interface Stat {
  */
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [RouterLink, MatButtonModule, MatIconModule, MatChipsModule, MarkdownPipe],
   template: `
     <!-- Hero -->
     <section class="hero container">
       <p class="eyebrow">{{ eyebrow() }}</p>
-      <h1 class="hero-title" [innerHTML]="title()"></h1>
+      <h1 class="hero-title" [innerHTML]="title() | markdown"></h1>
       <p class="hero-sub muted">{{ subtitle() }}</p>
       <div class="hero-cta">
         <a mat-flat-button color="primary" routerLink="/projects">
@@ -105,6 +106,7 @@ interface Stat {
     .hero { padding: 4.5rem 1.25rem 2rem; text-align: center; }
     .eyebrow { color: var(--pw-accent); font-weight: 600; letter-spacing: 0.02em; margin: 0 0 0.75rem; }
     .hero-title { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; margin: 0 0 1rem; }
+    .hero-title ::ng-deep p { display: inline; margin: 0; }
     .hero-sub { max-width: 720px; margin: 0 auto 1.75rem; font-size: 1.1rem; }
     .hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
     .hero-cta mat-icon { margin-right: 4px; }

@@ -148,6 +148,24 @@ h3 {
 .ql-editor.ql-blank::before {
   color: var(--pw-muted);
 }
+/* Custom toolbar button: gradient text (span.grad) */
+.ql-snow.ql-toolbar button.ql-grad {
+  width: auto;
+  padding: 0 5px;
+}
+.ql-snow.ql-toolbar button.ql-grad::after {
+  content: 'Aa';
+  font-weight: 800;
+  font-size: 14px;
+  background: linear-gradient(120deg, var(--pw-accent), var(--pw-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ql-snow.ql-toolbar button.ql-grad.ql-active {
+  outline: 1px solid var(--pw-accent);
+  border-radius: 4px;
+}
 
 /* Markdown content rendering */
 .markdown-body h1,

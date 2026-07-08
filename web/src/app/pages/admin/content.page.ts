@@ -11,7 +11,7 @@ import { RouteMeta } from '@analogjs/router';
 import { QuillEditorComponent } from 'ngx-quill';
 import { ApiService } from '../../core/api.service';
 import { authGuard } from '../../core/auth.guard';
-import { QUILL_MODULES } from '../../shared/quill-config';
+import { QUILL_MODULES, registerQuillExtensions } from '../../shared/quill-config';
 
 export const routeMeta: RouteMeta = { canActivate: [authGuard] };
 
@@ -147,6 +147,7 @@ export default class AdminContent {
   }
 
   constructor() {
+    registerQuillExtensions();
     this.load();
   }
 
