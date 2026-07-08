@@ -1,7 +1,0 @@
-﻿2026-07-08T03:05:19.2051722Z ##[group]Run ok=1
-2026-07-08T03:05:19.2052280Z [36;1mok=1[0m
-2026-07-08T03:05:19.2053349Z [36;1m[ -n 'https://api-internal.neumannmarques.com' ] || { echo "::error::Variable API_INTERNAL_URL is not set — run the Infra workflow first."; ok=0; }[0m
-2026-07-08T03:05:19.2054987Z [36;1m[ -n 'personal-website' ] || { echo "::error::Variable CF_PAGES_PROJECT is not set — run the Infra workflow first."; ok=0; }[0m
-2026-07-08T03:05:19.2056287Z [36;1m[ "$ok" = "1" ][0m
-2026-07-08T03:05:19.2246484Z shell: /usr/bin/bash -e {0}
-2026-07-08T03:05:19.2247358Z ##[endgroup]
