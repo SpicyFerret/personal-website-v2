@@ -115,12 +115,17 @@ jobs:
             --from-literal=R2__PublicBaseUrl='${{ secrets.R2_PUBLIC_BASE_URL }}' \
             --dry-run=client -o yaml | kubectl apply -f -
       - name: GHCR pull secret (only needed if the package is private)
-        if: ${{ secrets.GHCR_PULL_TOKEN != '' }}
+        env:
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         run: |
+          if [ -z "$GHCR_PULL_TOKEN" ]; then
+            echo "GHCR_PULL_TOKEN not set — skipping (assuming the GHCR package is public)."
+            exit 0
+          fi
           kubectl -n personal-website create secret docker-registry ghcr \
             --docker-server=ghcr.io \
             --docker-username='${{ github.actor }}' \
-            --docker-password='${{ secrets.GHCR_PULL_TOKEN }}' \
+            --docker-password="$GHCR_PULL_TOKEN" \
             --dry-run=client -o yaml | kubectl apply -f -
       - name: Cloudflared tunnel token secret
         run: |
