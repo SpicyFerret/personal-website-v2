@@ -182,9 +182,7 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 | `CLOUDFLARE_TUNNEL_TOKEN` (secret) | `tofu output tunnel_token` |
 | `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` (secrets) | Zero Trust service token |
 | `R2_ENDPOINT` / `R2_BUCKET` (secrets) | R2 outputs |
-| `K8S_API_HOSTNAME` / `API_INTERNAL_URL` (variables) | tunnel hostnames |
-
-**Variables set manually**: `CF_PAGES_PROJECT` (your Cloudflare Pages project name).
+| `K8S_API_HOSTNAME` / `API_INTERNAL_URL` / `CF_PAGES_PROJECT` (variables) | tunnel hostnames + Pages project (created by tofu; site served at `<project>.pages.dev` until you attach the custom domain) |
 
 `GITHUB_TOKEN` (automatic) pushes images to GHCR — no secret needed. OpenTofu state lives in the
 R2 bucket `personal-website-tfstate` — the infra workflow creates it automatically if missing
@@ -195,4 +193,5 @@ R2 bucket `personal-website-tfstate` — the infra workflow creates it automatic
 - [ ] Drop a real CV at `web/public/Danilo_Marques_CV.pdf` (the Resume page links to it).
 - [ ] Wire AWS SES email notification on contact submit (`ContactController` has the hook).
 - [ ] Set real social handles in `web/src/app/core/config.ts`.
-- [ ] Create the Cloudflare Pages project + R2 bucket and populate the secrets above.
+- [ ] Populate the bootstrap secrets above, then run the Infra workflow (Pages project + R2 buckets are created automatically).
+- [ ] When ready to switch the domain: attach `neumannmarques.com` to the Pages project (dashboard or `cloudflare_pages_domain` in tofu).

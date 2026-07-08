@@ -18,6 +18,13 @@ jobs:
       run:
         working-directory: web
     steps:
+      - name: Require infra-provided config
+        run: |
+          ok=1
+          [ -n '${{ vars.API_INTERNAL_URL }}' ] || { echo "::error::Variable API_INTERNAL_URL is not set — run the Infra workflow first."; ok=0; }
+          [ -n '${{ vars.CF_PAGES_PROJECT }}' ] || { echo "::error::Variable CF_PAGES_PROJECT is not set — run the Infra workflow first."; ok=0; }
+          [ "$ok" = "1" ]
+        working-directory: .
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

@@ -74,5 +74,6 @@ jobs:
 
           gh variable set K8S_API_HOSTNAME --repo "$repo" --body "$(tofu output -raw k8s_api_hostname)"
           gh variable set API_INTERNAL_URL --repo "$repo" --body "$(tofu output -raw api_internal_url)"
+          gh variable set CF_PAGES_PROJECT --repo "$repo" --body "$(tofu output -raw pages_project)"
 
-          echo "Synced: CLOUDFLARE_TUNNEL_TOKEN, CF_ACCESS_*, R2_ENDPOINT, R2_BUCKET, K8S_API_HOSTNAME, API_INTERNAL_URL"
+          echo "Synced: CLOUDFLARE_TUNNEL_TOKEN, CF_ACCESS_*, R2_ENDPOINT, R2_BUCKET, K8S_API_HOSTNAME, API_INTERNAL_URL, CF_PAGES_PROJECT"

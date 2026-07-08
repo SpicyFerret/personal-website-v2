@@ -64,6 +64,13 @@ jobs:
     # (Alternative: a self-hosted runner on a Pi — `runs-on: [self-hosted, k3s]` — then drop
     # the cloudflared steps and use the node's local kubeconfig.)
     steps:
+      - name: Require infra-provided config
+        run: |
+          ok=1
+          [ -n '${{ secrets.KUBE_CONFIG }}' ]             || { echo "::error::Secret KUBE_CONFIG is not set (base64 of ~/.kube/pi-k3s-ci.yaml — see README)."; ok=0; }
+          [ -n '${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}' ] || { echo "::error::Secret CLOUDFLARE_TUNNEL_TOKEN is not set — run the Infra workflow first."; ok=0; }
+          [ -n '${{ vars.K8S_API_HOSTNAME }}' ]           || { echo "::error::Variable K8S_API_HOSTNAME is not set — run the Infra workflow first."; ok=0; }
+          [ "$ok" = "1" ]
       - uses: actions/checkout@v4
       - uses: azure/setup-kubectl@v4
       - name: Install cloudflared

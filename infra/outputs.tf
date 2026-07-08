@@ -35,6 +35,11 @@ output "r2_bucket" {
   value       = cloudflare_r2_bucket.assets.name
 }
 
+output "pages_project" {
+  description = "GitHub variable CF_PAGES_PROJECT."
+  value       = cloudflare_pages_project.site.name
+}
+
 output "r2_endpoint" {
   description = "GitHub secret R2_ENDPOINT (S3 API)."
   value       = "https://${var.cloudflare_account_id}.r2.cloudflarestorage.com"

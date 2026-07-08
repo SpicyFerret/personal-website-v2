@@ -96,3 +96,16 @@ resource "cloudflare_r2_bucket" "assets" {
   name       = var.r2_bucket_name
   location   = "ENAM" # East North America (closest region to Brazil this provider offers)
 }
+
+# ---------------------------------------------------------------------------
+# Cloudflare Pages project (direct-upload; web.yml deploys with wrangler)
+# ---------------------------------------------------------------------------
+# NOTE: the custom domain is intentionally NOT attached here — the current site
+# at www.neumannmarques.com stays untouched. When ready to switch, add a
+# cloudflare_pages_domain + DNS record (or attach it in the dashboard).
+
+resource "cloudflare_pages_project" "site" {
+  account_id        = var.cloudflare_account_id
+  name              = var.pages_project_name
+  production_branch = "main"
+}

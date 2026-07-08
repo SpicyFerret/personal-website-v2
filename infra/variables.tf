@@ -38,6 +38,12 @@ variable "r2_bucket_name" {
   default     = "personal-website-assets"
 }
 
+variable "pages_project_name" {
+  description = "Cloudflare Pages project name (direct-upload)."
+  type        = string
+  default     = "personal-website"
+}
+
 variable "github_repo" {
   description = "OWNER/REPO of this repository (used only in output hints)."
   type        = string
