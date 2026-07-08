@@ -164,8 +164,9 @@ resource "cloudflare_pages_domain" "site" {
 }
 
 resource "cloudflare_record" "site" {
-  count   = var.site_domain != "" ? 1 : 0
-  zone_id = var.cloudflare_zone_id
+  count           = var.site_domain != "" ? 1 : 0
+  allow_overwrite = true # take over a pre-existing record of the same name+type
+  zone_id         = var.cloudflare_zone_id
   name    = var.site_domain
   type    = "CNAME"
   content = cloudflare_pages_project.site.subdomain # e.g. personal-website-ei1.pages.dev
