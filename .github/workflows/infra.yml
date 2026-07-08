@@ -31,6 +31,18 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
       AWS_ENDPOINT_URL_S3: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
     steps:
+      - name: Require bootstrap secrets
+        working-directory: .
+        run: |
+          ok=1
+          [ -n '${{ secrets.CLOUDFLARE_API_TOKEN }}' ]  || { echo "::error::Secret CLOUDFLARE_API_TOKEN is not set."; ok=0; }
+          [ -n '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}' ] || { echo "::error::Secret CLOUDFLARE_ACCOUNT_ID is not set."; ok=0; }
+          [ -n '${{ secrets.CLOUDFLARE_ZONE_ID }}' ]    || { echo "::error::Secret CLOUDFLARE_ZONE_ID is not set."; ok=0; }
+          [ -n '${{ secrets.R2_ACCESS_KEY }}' ]         || { echo "::error::Secret R2_ACCESS_KEY is not set (dashboard → R2 → Manage R2 API Tokens)."; ok=0; }
+          [ -n '${{ secrets.R2_SECRET_KEY }}' ]         || { echo "::error::Secret R2_SECRET_KEY is not set (dashboard → R2 → Manage R2 API Tokens)."; ok=0; }
+          [ -n '${{ secrets.GH_PAT }}' ]                || { echo "::error::Secret GH_PAT is not set (fine-grained PAT, this repo, Secrets:RW + Variables:RW)."; ok=0; }
+          [ "$ok" = "1" ]
+
       - uses: actions/checkout@v4
 
       - uses: opentofu/setup-opentofu@v1
