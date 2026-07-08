@@ -39,6 +39,11 @@ jobs:
           # to the backend behind the Cloudflare tunnel. VITE_API_URL stays empty.
           API_PROXY_TARGET: ${{ vars.API_INTERNAL_URL }}
         run: npm run build
+      - name: Flatten static assets to the deploy root
+        # Nitro's cloudflare-pages output keeps static files under public/, but
+        # Pages only serves statics from the upload root — without this, every
+        # /assets/* request 404s and the site renders unstyled.
+        run: cp -r dist/analog/public/. dist/analog/
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
