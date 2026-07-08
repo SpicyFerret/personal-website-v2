@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+cloudflare_api_token  = "YOUR_API_TOKEN"
+cloudflare_account_id = "YOUR_ACCOUNT_ID"
+cloudflare_zone_id    = "YOUR_ZONE_ID"
+domain                = "neumannmarques.com"
+github_repo           = "OWNER/personal-website-v2"

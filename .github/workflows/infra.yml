@@ -1,0 +1,78 @@
+name: Infra (OpenTofu)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  workflow_dispatch:
+
+# Never run two applies at once (R2 has no state locking).
+concurrency:
+  group: infra
+  cancel-in-progress: false
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      TF_STATE_BUCKET: personal-website-tfstate
+      # Cloudflare provider auth
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_github_repo: ${{ github.repository }}
+      # R2 state backend (S3-compatible)
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
+      AWS_ENDPOINT_URL_S3: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.12.2
+
+      - name: Ensure tfstate bucket exists
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -eu
+          base="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/r2/buckets"
+          auth="Authorization: Bearer $CF_API_TOKEN"
+          if curl -sf -H "$auth" "$base/$TF_STATE_BUCKET" >/dev/null; then
+            echo "State bucket '$TF_STATE_BUCKET' already exists."
+          else
+            echo "Creating state bucket '$TF_STATE_BUCKET'..."
+            resp=$(curl -s -X POST "$base" -H "$auth" -H "Content-Type: application/json" \
+              --data "{\"name\":\"$TF_STATE_BUCKET\",\"locationHint\":\"enam\"}")
+            echo "$resp" | grep -q '"success": *true' || { echo "Create failed: $resp"; exit 1; }
+            echo "Created."
+          fi
+
+      - run: tofu init -backend-config="bucket=$TF_STATE_BUCKET"
+      - run: tofu validate
+      - run: tofu apply -auto-approve -input=false
+
+      - name: Sync outputs → repo secrets & variables
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }} # PAT with repo Secrets:RW + Variables:RW
+        run: |
+          set -eu
+          repo='${{ github.repository }}'
+
+          gh secret set CLOUDFLARE_TUNNEL_TOKEN --repo "$repo" --body "$(tofu output -raw tunnel_token)"
+          gh secret set CF_ACCESS_CLIENT_ID     --repo "$repo" --body "$(tofu output -raw cf_access_client_id)"
+          gh secret set CF_ACCESS_CLIENT_SECRET --repo "$repo" --body "$(tofu output -raw cf_access_client_secret)"
+          gh secret set R2_ENDPOINT             --repo "$repo" --body "$(tofu output -raw r2_endpoint)"
+          gh secret set R2_BUCKET               --repo "$repo" --body "$(tofu output -raw r2_bucket)"
+
+          gh variable set K8S_API_HOSTNAME --repo "$repo" --body "$(tofu output -raw k8s_api_hostname)"
+          gh variable set API_INTERNAL_URL --repo "$repo" --body "$(tofu output -raw api_internal_url)"
+
+          echo "Synced: CLOUDFLARE_TUNNEL_TOKEN, CF_ACCESS_*, R2_ENDPOINT, R2_BUCKET, K8S_API_HOSTNAME, API_INTERNAL_URL"

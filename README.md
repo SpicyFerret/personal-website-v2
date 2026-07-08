@@ -113,7 +113,26 @@ The proxy target is `API_PROXY_TARGET` (defaults to `http://localhost:5256`).
 |-----------|--------|-----|
 | Frontend  | **Cloudflare Pages** | [`.github/workflows/web.yml`](.github/workflows/web.yml) builds Analog with the `cloudflare-pages` Nitro preset and `wrangler pages deploy dist/analog`. |
 | API + DB  | **k3s on Raspberry Pi 5 (arm64)** | [`.github/workflows/api.yml`](.github/workflows/api.yml) builds a `linux/arm64` image → GHCR, then `kubectl apply` the [`k8s/`](k8s/) manifests and injects secrets. |
-| Exposure  | **Cloudflare Zero Trust tunnel** | [`k8s/cloudflared.yaml`](k8s/cloudflared.yaml) runs `cloudflared` in-cluster; route `api-internal.yourdomain.com → http://api:80`. |
+| Cloudflare infra | **OpenTofu** ([`infra/`](infra/)) | Tunnel + remote ingress rules, DNS CNAMEs, Zero Trust Access app + CI service token, R2 bucket. |
+| Exposure  | **Cloudflare Zero Trust tunnel** | [`k8s/cloudflared.yaml`](k8s/cloudflared.yaml) runs the connector with the token from OpenTofu (CI creates the secret). |
+
+### Provisioning (one-time)
+
+```bash
+# 1. Bootstrap k3s on the Pis (server = the Pi with the LARGER disk):
+#    put "SSHPASS=<pi password>" in a pi.env file (never commit it), then:
+docker run --rm --env-file pi.env -v "$PWD/scripts:/s" alpine:3.20 sh -c \
+  "apk add -q openssh-client sshpass && SERVER_IP=<big-disk-pi> AGENT_IP=<other-pi> SSH_USER=zion sh /s/k3s-bootstrap.sh"
+#    → prints the base64 KUBE_CONFIG for the GitHub secret at the end
+
+# 2. Provision Cloudflare (tunnel, DNS, Access, R2) — runs IN CI, no local tofu needed:
+#    a. Set the bootstrap secrets below (CLOUDFLARE_API_TOKEN, ..., GH_PAT)
+#    b. Run the "Infra (OpenTofu)" workflow (or push a change under infra/)
+#       → creates the tfstate bucket if missing, applies everything AND
+#         auto-syncs the derived secrets/variables to the repo
+```
+
+(Prefer local? `cd infra && cp terraform.tfvars.example terraform.tfvars && tofu init -backend=false && tofu apply` still works.)
 
 Everything is served from **one domain** — the Pages worker proxies `/api/**` to the API tunnel,
 so there is no CORS:
@@ -125,9 +144,9 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 ```
 
 > **k3s reachability:** the `deploy` job reaches your private API server through the tunnel.
-> [`k8s/cloudflared.yaml`](k8s/cloudflared.yaml) routes `k8s.yourdomain.com → tcp://kubernetes.default.svc:443`;
+> OpenTofu routes `k8s.yourdomain.com → tcp://kubernetes.default.svc:443` (remote-managed ingress);
 > CI runs `cloudflared access tcp` with a Zero Trust **service token** to bridge it to
-> `127.0.0.1:6443`. So your stored `KUBE_CONFIG` must use:
+> `127.0.0.1:6443`. So your stored `KUBE_CONFIG` must use (the bootstrap script emits exactly this):
 > ```yaml
 > clusters:
 >   - cluster:
@@ -140,28 +159,36 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 
 ### GitHub repo secrets & variables
 
-**Secrets** (Settings → Secrets and variables → Actions → *Secrets*):
+**Set manually, once** (Settings → Secrets and variables → Actions → *Secrets*):
 
-| Secret | Used by | Notes |
-|--------|---------|-------|
-| `KUBE_CONFIG` | api | base64 kubeconfig pointing at `https://127.0.0.1:6443` (`base64 -w0 config`) |
-| `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` | api | Zero Trust **service token** for the `k8s.yourdomain.com` Access app |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | api | DB credentials (also build the connection string) |
-| `JWT_KEY` | api | ≥ 32 chars |
+| Secret | Used by | Where it comes from |
+|--------|---------|---------------------|
+| `CLOUDFLARE_API_TOKEN` | infra + web | custom token — Account: Cloudflare Tunnel:Edit, Access: Apps and Policies:Edit, Access: Service Tokens:Edit, Workers R2 Storage:Edit, Cloudflare Pages:Edit · Zone: DNS:Edit (specific zone) |
+| `CLOUDFLARE_ACCOUNT_ID` | infra + web | dashboard → zone overview, right sidebar |
+| `CLOUDFLARE_ZONE_ID` | infra | dashboard → zone overview, right sidebar |
+| `R2_ACCESS_KEY` / `R2_SECRET_KEY` | infra + api | dashboard → R2 → Manage R2 API Tokens (state backend + asset uploads) |
+| `GH_PAT` | infra | fine-grained PAT on this repo with **Secrets: RW + Variables: RW** (lets the infra workflow sync outputs) |
+| `KUBE_CONFIG` | api | printed (base64) at the end of `scripts/k3s-bootstrap.sh` |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | api | you choose |
+| `JWT_KEY` | api | any random string ≥ 32 chars |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | api | seeded admin login |
-| `R2_ENDPOINT` / `R2_ACCESS_KEY` / `R2_SECRET_KEY` / `R2_BUCKET` / `R2_PUBLIC_BASE_URL` | api | Cloudflare R2 |
+| `R2_PUBLIC_BASE_URL` | api | your assets custom domain (e.g. `https://assets.yourdomain.com`) |
 | `GHCR_PULL_TOKEN` | api | *optional* — only if the GHCR package is private |
-| `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` | web | Cloudflare Pages deploy |
 
-**Variables** (same screen → *Variables*):
+**Auto-managed by the [Infra workflow](.github/workflows/infra.yml)** — do not set by hand:
 
-| Variable | Used by | Example |
-|----------|---------|---------|
-| `K8S_API_HOSTNAME` | api | `k8s.yourdomain.com` (the tunnel hostname for the k3s API) |
-| `API_INTERNAL_URL` | web | `https://api-internal.yourdomain.com` (proxy target for `/api/**`) |
-| `CF_PAGES_PROJECT` | web | your Cloudflare Pages project name |
+| Secret / Variable | Source |
+|-------------------|--------|
+| `CLOUDFLARE_TUNNEL_TOKEN` (secret) | `tofu output tunnel_token` |
+| `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` (secrets) | Zero Trust service token |
+| `R2_ENDPOINT` / `R2_BUCKET` (secrets) | R2 outputs |
+| `K8S_API_HOSTNAME` / `API_INTERNAL_URL` (variables) | tunnel hostnames |
 
-`GITHUB_TOKEN` (automatic) pushes images to GHCR — no secret needed.
+**Variables set manually**: `CF_PAGES_PROJECT` (your Cloudflare Pages project name).
+
+`GITHUB_TOKEN` (automatic) pushes images to GHCR — no secret needed. OpenTofu state lives in the
+R2 bucket `personal-website-tfstate` — the infra workflow creates it automatically if missing
+(name defined once, as `TF_STATE_BUCKET` in [`infra.yml`](.github/workflows/infra.yml)).
 
 ## TODO / next steps
 

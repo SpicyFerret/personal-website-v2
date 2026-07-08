@@ -27,6 +27,9 @@ spec:
       labels:
         app: postgres
     spec:
+      # Pin to the Pi with the larger disk (labelled by scripts/k3s-bootstrap.sh).
+      nodeSelector:
+        disk: large
       containers:
         - name: postgres
           image: postgres:17-alpine

@@ -115,9 +115,15 @@ jobs:
             --docker-username='${{ github.actor }}' \
             --docker-password='${{ secrets.GHCR_PULL_TOKEN }}' \
             --dry-run=client -o yaml | kubectl apply -f -
+      - name: Cloudflared tunnel token secret
+        run: |
+          kubectl -n personal-website create secret generic cloudflared-token \
+            --from-literal=token='${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
       - name: Apply manifests & roll out
         run: |
           kubectl apply -f k8s/postgres.yaml
           kubectl apply -f k8s/api.yaml
+          kubectl apply -f k8s/cloudflared.yaml
           kubectl -n personal-website set image deployment/api api=${{ env.IMAGE }}:sha-${{ github.sha }}
           kubectl -n personal-website rollout status deployment/api --timeout=180s

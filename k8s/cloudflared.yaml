@@ -1,47 +1,14 @@
-# Cloudflare Tunnel (cloudflared) running in-cluster. Exposes two things without
-# opening any inbound ports on your network:
-#   1. the public API   -> api.<yourdomain>        (HTTP)
-#   2. the k3s API server -> k8s.<yourdomain>      (TCP, for CI `kubectl`)
+# Cloudflare Tunnel (cloudflared) — remotely-managed tunnel.
 #
-# ── One-time setup (on a machine with cloudflared + `cloudflared login`) ──────────
-#   cloudflared tunnel create personal-website
-#     → writes ~/.cloudflared/<TUNNEL_ID>.json  (the credentials)
-#   cloudflared tunnel route dns personal-website api.yourdomain.com
-#   cloudflared tunnel route dns personal-website k8s.yourdomain.com
+# The tunnel, its ingress rules (api-internal.<domain> → api service,
+# k8s.<domain> → k3s API server), DNS records and the Zero Trust Access app are
+# all provisioned by OpenTofu — see infra/. Here we only run the connector.
 #
-#   # store the credentials as a k8s secret:
-#   kubectl -n personal-website create secret generic cloudflared-credentials \
-#     --from-file=credentials.json=$HOME/.cloudflared/<TUNNEL_ID>.json
-#
-#   Then replace <TUNNEL_ID> and the hostnames below and `kubectl apply -f`.
-#
-#   Lock down k8s.yourdomain.com with a Zero Trust Access policy + a SERVICE TOKEN,
-#   and give CI that token (see api.yml / README).
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cloudflared-config
-  namespace: personal-website
-data:
-  config.yaml: |
-    tunnel: <TUNNEL_ID>
-    credentials-file: /etc/cloudflared/creds/credentials.json
-    no-autoupdate: true
-    metrics: 0.0.0.0:2000
-    ingress:
-      # API origin — only the Cloudflare Pages worker calls this (browser never sees it).
-      # Lock it behind a Zero Trust Access policy + service token.
-      - hostname: api-internal.yourdomain.com
-        service: http://api:80
-
-      # k3s API server, exposed as raw TCP so kubectl keeps end-to-end TLS.
-      # Reach it from CI with: cloudflared access tcp --hostname k8s.yourdomain.com --url 127.0.0.1:6443
-      - hostname: k8s.yourdomain.com
-        service: tcp://kubernetes.default.svc:443
-
-      - service: http_status:404
----
+# The token comes from the `cloudflared-token` Secret, created by CI from the
+# GitHub secret CLOUDFLARE_TUNNEL_TOKEN (or manually:
+#   kubectl -n personal-website create secret generic cloudflared-token \
+#     --from-literal=token="$(cd infra && tofu output -raw tunnel_token)"
+# )
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -62,22 +29,22 @@ spec:
           image: cloudflare/cloudflared:latest
           args:
             - tunnel
-            - --config
-            - /etc/cloudflared/config/config.yaml
+            - --no-autoupdate
+            - --metrics
+            - 0.0.0.0:2000
             - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-token
+                  key: token
           livenessProbe:
             httpGet:
               path: /ready
               port: 2000
             initialDelaySeconds: 10
             periodSeconds: 30
-          volumeMounts:
-            - name: config
-              mountPath: /etc/cloudflared/config
-              readOnly: true
-            - name: creds
-              mountPath: /etc/cloudflared/creds
-              readOnly: true
           resources:
             requests:
               cpu: "50m"
@@ -85,10 +52,3 @@ spec:
             limits:
               cpu: "250m"
               memory: "128Mi"
-      volumes:
-        - name: config
-          configMap:
-            name: cloudflared-config
-        - name: creds
-          secret:
-            secretName: cloudflared-credentials

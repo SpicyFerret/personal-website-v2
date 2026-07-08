@@ -136,3 +136,13 @@ dist
 # Local secrets / appsettings overrides (keep appsettings.json template, ignore local)
 appsettings.Local.json
 api/**/appsettings.Development.json
+piConnection.txt
+# SSH credentials for the Pis - NEVER commit
+piConnection.txt
+
+# --- OpenTofu / Terraform ---
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
