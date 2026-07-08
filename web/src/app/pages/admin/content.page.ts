@@ -15,10 +15,17 @@ import { QUILL_MODULES, registerQuillExtensions } from '../../shared/quill-confi
 
 export const routeMeta: RouteMeta = { canActivate: [authGuard] };
 
+interface Stat {
+  value: string;
+  label: string;
+}
+
 interface Entry {
   key: string;
   value: string;
   dirty: boolean;
+  stats?: Stat[]; // structured editor state for home.stats
+  tech?: string; // comma-separated editor state for home.tech
 }
 
 /** Well-known keys offered as one-click templates when missing. */
@@ -30,8 +37,8 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
   { key: 'home.eyebrow', hint: 'Small line above the home title' },
   { key: 'home.title', hint: 'Home headline (HTML allowed, e.g. <span class="grad">…</span>)' },
   { key: 'home.subtitle', hint: 'Paragraph under the home title' },
-  { key: 'home.stats', hint: 'JSON: [{"value":"4+ yrs","label":".NET"}]' },
-  { key: 'home.tech', hint: 'JSON: ["Angular",".NET","PostgreSQL"]' },
+  { key: 'home.stats', hint: 'Stat cards (value + label) shown on the home page' },
+  { key: 'home.tech', hint: 'Tech chips shown on the home page' },
 ];
 
 @Component({
@@ -52,8 +59,8 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
       <a routerLink="/admin" class="muted">← Dashboard</a>
       <h1>Site content</h1>
       <p class="muted">
-        Texts that make the site yours — resume, home hero, etc. Rich text for long content,
-        plain text/JSON for the small keys.
+        Texts that make the site yours — resume, home hero, stats and tech chips.
+        Rich text for long content; structured fields for stats/tech.
       </p>
 
       <mat-accordion multi>
@@ -74,6 +81,28 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
                 </button>
                 <input #pdfInput type="file" hidden accept="application/pdf" (change)="uploadPdf(e, $event)" />
               </div>
+            } @else if (isStats(e)) {
+              <div class="stats-editor">
+                @for (s of e.stats; track $index) {
+                  <div class="stat-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Value</mat-label>
+                      <input matInput [(ngModel)]="s.value" (ngModelChange)="syncStats(e)" placeholder="4+ yrs" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Label</mat-label>
+                      <input matInput [(ngModel)]="s.label" (ngModelChange)="syncStats(e)" placeholder=".NET / C#" />
+                    </mat-form-field>
+                    <button mat-icon-button (click)="removeStat(e, $index)" aria-label="Remove"><mat-icon>close</mat-icon></button>
+                  </div>
+                }
+                <button mat-stroked-button (click)="addStat(e)"><mat-icon>add</mat-icon> Add stat</button>
+              </div>
+            } @else if (isTech(e)) {
+              <mat-form-field appearance="outline" class="full">
+                <mat-label>Tech (comma separated)</mat-label>
+                <input matInput [(ngModel)]="e.tech" (ngModelChange)="syncTech(e)" placeholder="Angular, .NET, PostgreSQL, Docker" />
+              </mat-form-field>
             } @else if (isRich(e)) {
               <quill-editor
                 [modules]="quillModules"
@@ -139,6 +168,11 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
     quill-editor { display: block; }
     .file-row { display: flex; gap: 0.5rem; align-items: flex-start; }
     .file-row .grow { flex: 1 1 auto; }
+    .full { width: 100%; }
+    .stats-editor { display: flex; flex-direction: column; gap: 0.25rem; }
+    .stat-row { display: flex; gap: 0.5rem; align-items: center; }
+    .stat-row mat-form-field { flex: 1 1 auto; }
+    .stat-row button { flex: 0 0 auto; }
     .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .row-actions mat-icon, .known mat-icon, .custom mat-icon { margin-right: 4px; }
     .known { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
@@ -167,6 +201,55 @@ export default class AdminContent {
     return e.key === 'resume.pdf';
   }
 
+  isStats(e: Entry): boolean {
+    return e.key === 'home.stats';
+  }
+  isTech(e: Entry): boolean {
+    return e.key === 'home.tech';
+  }
+
+  /** Populate the structured editor state from the stored JSON string. */
+  private initStructured(e: Entry): Entry {
+    if (e.key === 'home.stats') {
+      let parsed: Stat[] = [];
+      try {
+        const j = JSON.parse(e.value);
+        if (Array.isArray(j)) parsed = j.map((s) => ({ value: s?.value ?? '', label: s?.label ?? '' }));
+      } catch {
+        /* not JSON yet */
+      }
+      e.stats = parsed;
+    } else if (e.key === 'home.tech') {
+      let csv = '';
+      try {
+        const j = JSON.parse(e.value);
+        if (Array.isArray(j)) csv = j.join(', ');
+      } catch {
+        csv = e.value.startsWith('[') ? '' : e.value; // tolerate old plain text
+      }
+      e.tech = csv;
+    }
+    return e;
+  }
+
+  addStat(e: Entry): void {
+    e.stats = [...(e.stats ?? []), { value: '', label: '' }];
+    this.syncStats(e);
+  }
+  removeStat(e: Entry, i: number): void {
+    e.stats = (e.stats ?? []).filter((_, idx) => idx !== i);
+    this.syncStats(e);
+  }
+  syncStats(e: Entry): void {
+    e.value = JSON.stringify((e.stats ?? []).filter((s) => s.value || s.label));
+    e.dirty = true;
+  }
+  syncTech(e: Entry): void {
+    const arr = (e.tech ?? '').split(',').map((t) => t.trim()).filter(Boolean);
+    e.value = JSON.stringify(arr);
+    e.dirty = true;
+  }
+
   constructor() {
     registerQuillExtensions();
     this.load();
@@ -181,7 +264,7 @@ export default class AdminContent {
     this.api.getContent().subscribe((map) => {
       this.entries.set(
         Object.entries(map)
-          .map(([key, value]) => ({ key, value, dirty: false }))
+          .map(([key, value]) => this.initStructured({ key, value, dirty: false }))
           .sort((a, b) => a.key.localeCompare(b.key)),
       );
     });
@@ -191,7 +274,9 @@ export default class AdminContent {
     key = key.trim();
     if (!key || this.entries().some((e) => e.key === key)) return;
     this.entries.update((list) =>
-      [...list, { key, value: '', dirty: true }].sort((a, b) => a.key.localeCompare(b.key)),
+      [...list, this.initStructured({ key, value: '', dirty: true })].sort((a, b) =>
+        a.key.localeCompare(b.key),
+      ),
     );
     this.newKey = '';
   }
