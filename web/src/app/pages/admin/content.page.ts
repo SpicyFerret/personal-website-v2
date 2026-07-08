@@ -22,6 +22,8 @@ interface Entry {
 }
 
 /** Well-known keys offered as one-click templates when missing. */
+const RICH_KEYS = new Set(['resume', 'home.title', 'home.subtitle', 'home.eyebrow']);
+
 const KNOWN_KEYS: { key: string; hint: string }[] = [
   { key: 'resume', hint: 'Resume page body (rich text)' },
   { key: 'resume.pdf', hint: 'URL of the resume PDF (optional button)' },
@@ -61,7 +63,18 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
               <mat-panel-title>{{ e.key }}</mat-panel-title>
               @if (e.dirty) { <mat-panel-description>unsaved</mat-panel-description> }
             </mat-expansion-panel-header>
-            @if (isRich(e)) {
+            @if (isFileUrl(e)) {
+              <div class="file-row">
+                <mat-form-field appearance="outline" class="grow">
+                  <mat-label>URL</mat-label>
+                  <input matInput [(ngModel)]="e.value" (ngModelChange)="e.dirty = true" />
+                </mat-form-field>
+                <button mat-stroked-button (click)="pdfInput.click()" [disabled]="uploading()">
+                  <mat-icon>upload_file</mat-icon> {{ uploading() ? 'Uploading…' : 'Upload PDF' }}
+                </button>
+                <input #pdfInput type="file" hidden accept="application/pdf" (change)="uploadPdf(e, $event)" />
+              </div>
+            } @else if (isRich(e)) {
               <quill-editor
                 [modules]="quillModules"
                 [(ngModel)]="e.value"
@@ -124,6 +137,8 @@ const KNOWN_KEYS: { key: string; hint: string }[] = [
       resize: vertical;
     }
     quill-editor { display: block; }
+    .file-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+    .file-row .grow { flex: 1 1 auto; }
     .row-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .row-actions mat-icon, .known mat-icon, .custom mat-icon { margin-right: 4px; }
     .known { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
@@ -137,13 +152,19 @@ export default class AdminContent {
 
   readonly entries = signal<Entry[]>([]);
   readonly saving = signal(false);
+  readonly uploading = signal(false);
   readonly message = signal('');
   readonly quillModules = QUILL_MODULES;
   newKey = '';
 
-  /** Rich editor for long-form keys and anything already stored as HTML. */
+  /** Rich editor (with colors/gradient) for text keys and anything stored as HTML. */
   isRich(e: Entry): boolean {
-    return e.key === 'resume' || e.value.trimStart().startsWith('<');
+    return RICH_KEYS.has(e.key) || e.value.trimStart().startsWith('<');
+  }
+
+  /** Keys that hold an uploadable file URL. */
+  isFileUrl(e: Entry): boolean {
+    return e.key === 'resume.pdf';
   }
 
   constructor() {
@@ -173,6 +194,24 @@ export default class AdminContent {
       [...list, { key, value: '', dirty: true }].sort((a, b) => a.key.localeCompare(b.key)),
     );
     this.newKey = '';
+  }
+
+  uploadPdf(entry: Entry, event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploading.set(true);
+    this.api.uploadAsset(file, 'resume').subscribe({
+      next: (res) => {
+        entry.value = res.url;
+        entry.dirty = true;
+        this.uploading.set(false);
+        this.message.set('PDF uploaded — click Save to persist the URL.');
+      },
+      error: () => {
+        this.uploading.set(false);
+        this.message.set('PDF upload failed.');
+      },
+    });
   }
 
   save(entry: Entry): void {
