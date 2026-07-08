@@ -106,7 +106,7 @@ interface Stat {
     .hero { padding: 4.5rem 1.25rem 2rem; text-align: center; }
     .eyebrow { color: var(--pw-accent); font-weight: 600; letter-spacing: 0.02em; margin: 0 0 0.75rem; }
     .hero-title { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; margin: 0 0 1rem; }
-    .hero-title ::ng-deep p { display: inline; margin: 0; }
+    .hero-title ::ng-deep p { margin: 0; } /* block: multiple paragraphs = line breaks */
     .eyebrow ::ng-deep p, .hero-sub ::ng-deep p { margin: 0; }
     .hero-sub { max-width: 720px; margin: 0 auto 1.75rem; font-size: 1.1rem; }
     .hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
