@@ -30,6 +30,16 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "k3s" {
       service  = "tcp://kubernetes.default.svc:443"
     }
 
+    # Observability UIs (Observability repo) — behind Zero Trust Access below.
+    ingress_rule {
+      hostname = "grafana.${var.domain}"
+      service  = "http://kps-grafana.observability.svc.cluster.local:80"
+    }
+    ingress_rule {
+      hostname = "portainer.${var.domain}"
+      service  = "http://portainer.observability.svc.cluster.local:9000"
+    }
+
     # Catch-all (required last rule)
     ingress_rule {
       service = "http_status:404"
@@ -55,6 +65,15 @@ resource "cloudflare_record" "k8s" {
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.k3s.id}.cfargotunnel.com"
   proxied = true
+}
+
+resource "cloudflare_record" "observability" {
+  for_each = toset(["grafana", "portainer"])
+  zone_id  = var.cloudflare_zone_id
+  name     = each.key
+  type     = "CNAME"
+  content  = "${cloudflare_zero_trust_tunnel_cloudflared.k3s.id}.cfargotunnel.com"
+  proxied  = true
 }
 
 # ---------------------------------------------------------------------------
@@ -84,6 +103,29 @@ resource "cloudflare_zero_trust_access_policy" "k8s_ci" {
 
   include {
     service_token = [cloudflare_zero_trust_access_service_token.ci.id]
+  }
+}
+
+# Admin UIs (Grafana/Portainer): email one-time-PIN gate before the apps' own logins.
+resource "cloudflare_zero_trust_access_application" "observability" {
+  for_each         = toset(["grafana", "portainer"])
+  account_id       = var.cloudflare_account_id
+  name             = each.key
+  domain           = "${each.key}.${var.domain}"
+  type             = "self_hosted"
+  session_duration = "168h" # 7 days between OTP prompts
+}
+
+resource "cloudflare_zero_trust_access_policy" "observability_admin" {
+  for_each       = cloudflare_zero_trust_access_application.observability
+  application_id = each.value.id
+  account_id     = var.cloudflare_account_id
+  name           = "admin emails"
+  precedence     = 1
+  decision       = "allow"
+
+  include {
+    email = var.admin_emails
   }
 }
 

@@ -44,6 +44,12 @@ variable "pages_project_name" {
   default     = "personal-website"
 }
 
+variable "admin_emails" {
+  description = "Emails allowed through Zero Trust Access on the admin UIs (Grafana/Portainer) via one-time PIN."
+  type        = list(string)
+  default     = ["danilo@neumannmarques.com", "danilo.nmarques@gmail.com"]
+}
+
 variable "site_domain" {
   description = <<-EOT
     Custom hostname for the site (e.g. "www.neumannmarques.com" or the apex).
