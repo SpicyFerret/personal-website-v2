@@ -2,7 +2,7 @@ name: Infra (OpenTofu)
 
 on:
   push:
-    branches: [main]
+    branches: [infra]
     paths:
       - 'infra/**'
       - '.github/workflows/infra.yml'
