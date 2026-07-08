@@ -44,6 +44,17 @@ variable "pages_project_name" {
   default     = "personal-website"
 }
 
+variable "site_domain" {
+  description = <<-EOT
+    Custom hostname for the site (e.g. "www.neumannmarques.com" or the apex).
+    Empty (default) = serve only on <project>.pages.dev and leave existing DNS
+    untouched. Before setting it, DELETE the old hosting records (A/AAAA/CNAME)
+    for that hostname in the zone, or the record creation will conflict.
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "github_repo" {
   description = "OWNER/REPO of this repository (used only in output hints)."
   type        = string

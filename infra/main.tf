@@ -100,12 +100,28 @@ resource "cloudflare_r2_bucket" "assets" {
 # ---------------------------------------------------------------------------
 # Cloudflare Pages project (direct-upload; web.yml deploys with wrangler)
 # ---------------------------------------------------------------------------
-# NOTE: the custom domain is intentionally NOT attached here — the current site
-# at www.neumannmarques.com stays untouched. When ready to switch, add a
-# cloudflare_pages_domain + DNS record (or attach it in the dashboard).
 
 resource "cloudflare_pages_project" "site" {
   account_id        = var.cloudflare_account_id
   name              = var.pages_project_name
   production_branch = "main"
+}
+
+# Custom domain — only when var.site_domain (repo variable SITE_DOMAIN) is set.
+# While empty, existing DNS (e.g. the old hosting on the apex) stays untouched
+# and the site is served from <project>.pages.dev.
+resource "cloudflare_pages_domain" "site" {
+  count        = var.site_domain != "" ? 1 : 0
+  account_id   = var.cloudflare_account_id
+  project_name = cloudflare_pages_project.site.name
+  domain       = var.site_domain
+}
+
+resource "cloudflare_record" "site" {
+  count   = var.site_domain != "" ? 1 : 0
+  zone_id = var.cloudflare_zone_id
+  name    = var.site_domain
+  type    = "CNAME"
+  content = cloudflare_pages_project.site.subdomain # e.g. personal-website-ei1.pages.dev
+  proxied = true
 }

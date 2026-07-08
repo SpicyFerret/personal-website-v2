@@ -40,6 +40,11 @@ output "pages_project" {
   value       = cloudflare_pages_project.site.name
 }
 
+output "site_url" {
+  description = "Where the site is being served."
+  value = var.site_domain != "" ? "https://${var.site_domain}" : "https://${cloudflare_pages_project.site.subdomain}"
+}
+
 output "r2_endpoint" {
   description = "GitHub secret R2_ENDPOINT (S3 API)."
   value       = "https://${var.cloudflare_account_id}.r2.cloudflarestorage.com"
