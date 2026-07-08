@@ -107,3 +107,21 @@ jobs:
           gh variable set CF_PAGES_PROJECT --repo "$repo" --body "$(tofu output -raw pages_project)"
 
           echo "Synced: CLOUDFLARE_TUNNEL_TOKEN, CF_ACCESS_*, R2_ENDPOINT, R2_BUCKET, K8S_API_HOSTNAME, API_INTERNAL_URL, CF_PAGES_PROJECT"
+
+      - name: Public r2.dev access on the assets bucket → R2_PUBLIC_BASE_URL
+        # Not exposed by the v4 Terraform provider, so it's done via the API here.
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -eu
+          BUCKET=$(tofu output -raw r2_bucket)
+          resp=$(curl -s -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/r2/buckets/$BUCKET/domains/managed" \
+            -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" \
+            --data '{"enabled": true}')
+          echo "$resp" | grep -q '"success": *true' || { echo "Enable failed: $resp"; exit 1; }
+          DOMAIN=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin)['result']['domain'])")
+          gh secret set R2_PUBLIC_BASE_URL --repo '${{ github.repository }}' --body "https://$DOMAIN"
+          echo "R2_PUBLIC_BASE_URL -> https://$DOMAIN"

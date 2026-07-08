@@ -172,7 +172,7 @@ Browser ─▶ neumannmarques.com (Cloudflare Pages / Analog SSR)
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | api | you choose |
 | `JWT_KEY` | api | any random string ≥ 32 chars |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | api | seeded admin login |
-| `R2_PUBLIC_BASE_URL` | api | your assets custom domain (e.g. `https://assets.yourdomain.com`) |
+| ~~`R2_PUBLIC_BASE_URL`~~ | api | **auto-managed** — the Infra workflow enables public r2.dev access on the assets bucket and syncs the URL |
 | `GHCR_PULL_TOKEN` | api | *optional* — only if the GHCR package is private |
 
 **Auto-managed by the [Infra workflow](.github/workflows/infra.yml)** — do not set by hand:
