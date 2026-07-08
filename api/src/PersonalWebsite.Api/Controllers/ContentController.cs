@@ -7,7 +7,7 @@ using PersonalWebsite.Api.Models;
 
 namespace PersonalWebsite.Api.Controllers;
 
-public record SaveContentRequest([property: Required] string Value);
+public record SaveContentRequest([Required(AllowEmptyStrings = true)] string Value);
 
 [ApiController]
 [Route("api/content")]
