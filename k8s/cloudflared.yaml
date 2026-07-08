@@ -10,12 +10,13 @@
 #     --from-literal=token="$(cd infra && tofu output -raw tunnel_token)"
 # )
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: cloudflared
   namespace: personal-website
 spec:
-  replicas: 1
+  # DaemonSet = one connector per node — if a Pi dies, the other keeps the
+  # tunnel alive (each pod holds its own 4 QUIC connections to the edge).
   selector:
     matchLabels:
       app: cloudflared

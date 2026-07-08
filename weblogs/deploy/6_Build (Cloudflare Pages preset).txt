@@ -1,0 +1,84 @@
+﻿2026-07-08T03:05:33.9134025Z ##[group]Run npm run build
+2026-07-08T03:05:33.9134366Z [36;1mnpm run build[0m
+2026-07-08T03:05:33.9169865Z shell: /usr/bin/bash -e {0}
+2026-07-08T03:05:33.9170150Z env:
+2026-07-08T03:05:33.9170367Z   NITRO_PRESET: cloudflare-pages
+2026-07-08T03:05:33.9170735Z   API_PROXY_TARGET: https://api-internal.neumannmarques.com
+2026-07-08T03:05:33.9171092Z ##[endgroup]
+2026-07-08T03:05:34.0134271Z 
+2026-07-08T03:05:34.0134901Z > web@0.0.0 build
+2026-07-08T03:05:34.0135569Z > vite build
+2026-07-08T03:05:34.0135738Z 
+2026-07-08T03:05:35.9211867Z [36mvite v8.0.16 [32mbuilding client environment for production...[36m[39m
+2026-07-08T03:05:35.9223330Z [36mvite v8.0.16 [32mbuilding ssr environment for production...[36m[39m
+2026-07-08T03:05:39.2936897Z [2K
+2026-07-08T03:05:39.4677821Z transforming...[2K
+2026-07-08T03:05:44.9371769Z transforming...✓ 346 modules transformed.
+2026-07-08T03:05:44.9408329Z ✓ 121 modules transformed.
+2026-07-08T03:05:44.9934715Z rendering chunks...
+2026-07-08T03:05:45.0283758Z rendering chunks...
+2026-07-08T03:05:45.1176686Z computing gzip size...
+2026-07-08T03:05:45.1303513Z dist/ssr/assets/auth.guard-CG2DZ-cN.js            0.45 kB │ gzip:   0.29 kB
+2026-07-08T03:05:45.1326554Z dist/ssr/assets/markdown.pipe-DMgoZFqx.js         0.88 kB │ gzip:   0.49 kB
+2026-07-08T03:05:45.1327836Z dist/ssr/assets/api.service-BJZi76c0.js           2.47 kB │ gzip:   0.79 kB
+2026-07-08T03:05:45.1329026Z dist/ssr/assets/index.page-B9EXqi-w.js            3.93 kB │ gzip:   1.43 kB
+2026-07-08T03:05:45.1330239Z dist/ssr/assets/index.page-DZ-1KZol.js            4.57 kB │ gzip:   1.72 kB
+2026-07-08T03:05:45.1331387Z dist/ssr/assets/_slug_.page-xIkjl0xg.js           4.94 kB │ gzip:   1.79 kB
+2026-07-08T03:05:45.1332510Z dist/ssr/assets/login.page-CqIMLY_D.js            5.19 kB │ gzip:   1.88 kB
+2026-07-08T03:05:45.1333665Z dist/ssr/assets/index.page-B5OEMnhf.js            5.58 kB │ gzip:   1.84 kB
+2026-07-08T03:05:45.1334860Z dist/ssr/assets/index.page-C4xN4-cZ.js            5.70 kB │ gzip:   1.95 kB
+2026-07-08T03:05:45.1336226Z dist/ssr/assets/_slug_.page-BUaEXF37.js           5.70 kB │ gzip:   1.89 kB
+2026-07-08T03:05:45.1337361Z dist/ssr/assets/index.page-CXkxuuyn.js            6.06 kB │ gzip:   2.12 kB
+2026-07-08T03:05:45.1338502Z dist/ssr/assets/messages.page-CAtnRabg.js         6.62 kB │ gzip:   2.07 kB
+2026-07-08T03:05:45.1339685Z dist/ssr/assets/resume.page-D23JuFq0.js           8.00 kB │ gzip:   2.84 kB
+2026-07-08T03:05:45.1340866Z dist/ssr/assets/contact.page-BHhh2RjQ.js          8.44 kB │ gzip:   2.46 kB
+2026-07-08T03:05:45.1342004Z dist/ssr/assets/_id_.page-xdFI2nQe.js             9.01 kB │ gzip:   2.71 kB
+2026-07-08T03:05:45.1343118Z dist/ssr/assets/_id_.page-VUSkCsWd.js             9.66 kB │ gzip:   2.95 kB
+2026-07-08T03:05:45.1344231Z dist/ssr/assets/xhr2-DTKnHOX5.js                 20.67 kB │ gzip:   4.75 kB
+2026-07-08T03:05:45.1345530Z dist/ssr/assets/slide-toggle-CPiaVOzo.js         33.60 kB │ gzip:   6.12 kB
+2026-07-08T03:05:45.1346686Z dist/ssr/assets/input-chz10VdF.js                34.05 kB │ gzip:   7.27 kB
+2026-07-08T03:05:45.1347842Z dist/ssr/assets/platform-browser-CY7HQNf4.js    121.89 kB │ gzip:  28.42 kB
+2026-07-08T03:05:45.1349009Z dist/ssr/assets/index.page-DVvSReh_.js          135.95 kB │ gzip:  23.75 kB
+2026-07-08T03:05:45.1350152Z dist/ssr/assets/browser-05F6jU2i.js             139.37 kB │ gzip:  28.67 kB
+2026-07-08T03:05:45.1351294Z dist/ssr/assets/_error-state-chunk-DlcsjMSQ.js  208.65 kB │ gzip:  33.76 kB
+2026-07-08T03:05:45.1352417Z dist/ssr/assets/core-COo4qHxd.js                393.78 kB │ gzip:  89.61 kB
+2026-07-08T03:05:45.1353486Z dist/ssr/main.server.js                         766.26 kB │ gzip: 155.54 kB
+2026-07-08T03:05:45.1353982Z 
+2026-07-08T03:05:45.1354178Z computing gzip size...
+2026-07-08T03:05:45.1354691Z [32m✓ built in 9.21s[39m
+2026-07-08T03:05:45.1378540Z dist/client/index.html                               1.81 kB │ gzip:  0.91 kB
+2026-07-08T03:05:45.1380289Z dist/client/assets/index-DOhMXqFX.css                8.11 kB │ gzip:  1.98 kB
+2026-07-08T03:05:45.1381638Z dist/client/assets/auth.guard-BIXfkRvT.js            0.19 kB │ gzip:  0.17 kB
+2026-07-08T03:05:45.1383286Z dist/client/assets/api.service-BD-Q23LB.js           1.78 kB │ gzip:  0.57 kB
+2026-07-08T03:05:45.1384602Z dist/client/assets/index.page-IP7lyJw6.js            2.33 kB │ gzip:  1.11 kB
+2026-07-08T03:05:45.1386270Z dist/client/assets/_slug_.page-B2b0vSV3.js           2.44 kB │ gzip:  1.30 kB
+2026-07-08T03:05:45.1387658Z dist/client/assets/index.page-CxgSIbqZ.js            2.50 kB │ gzip:  1.28 kB
+2026-07-08T03:05:45.1389124Z dist/client/assets/login.page-DZRP0lDS.js            2.73 kB │ gzip:  1.37 kB
+2026-07-08T03:05:45.1390480Z dist/client/assets/_slug_.page-DQv9YQqR.js           2.82 kB │ gzip:  1.38 kB
+2026-07-08T03:05:45.1391816Z dist/client/assets/index.page-CQQdIFG6.js            2.98 kB │ gzip:  1.38 kB
+2026-07-08T03:05:45.1393117Z dist/client/assets/index.page-A4tutszu.js            3.10 kB │ gzip:  1.44 kB
+2026-07-08T03:05:45.1394496Z dist/client/assets/index.page-DrhSeQdd.js            3.31 kB │ gzip:  1.57 kB
+2026-07-08T03:05:45.1396079Z dist/client/assets/messages.page-CbGgnzne.js         3.38 kB │ gzip:  1.54 kB
+2026-07-08T03:05:45.1397441Z dist/client/assets/contact.page-D-e2VJuO.js          4.24 kB │ gzip:  1.85 kB
+2026-07-08T03:05:45.1398739Z dist/client/assets/_id_.page-DD0Ddn2r.js             4.92 kB │ gzip:  2.09 kB
+2026-07-08T03:05:45.1400024Z dist/client/assets/resume.page-m7J3mgw2.js           5.03 kB │ gzip:  2.42 kB
+2026-07-08T03:05:45.1401280Z dist/client/assets/_id_.page-DKeufvAA.js             5.28 kB │ gzip:  2.24 kB
+2026-07-08T03:05:45.1402460Z dist/client/assets/input-XUpzUcEd.js                19.88 kB │ gzip:  5.57 kB
+2026-07-08T03:05:45.1403716Z dist/client/assets/slide-toggle-DNQi5sD0.js         26.65 kB │ gzip:  5.08 kB
+2026-07-08T03:05:45.1404973Z dist/client/assets/markdown.pipe-DT3SKBeo.js        38.99 kB │ gzip: 11.85 kB
+2026-07-08T03:05:45.1406520Z dist/client/assets/platform-browser-CC5j-n7g.js     63.19 kB │ gzip: 20.22 kB
+2026-07-08T03:05:45.1407879Z dist/client/assets/browser-IpZCyagG.js              69.23 kB │ gzip: 19.32 kB
+2026-07-08T03:05:45.1409244Z dist/client/assets/index.page-BlWwam1J.js           97.18 kB │ gzip: 18.31 kB
+2026-07-08T03:05:45.1410565Z dist/client/assets/_error-state-chunk-BTBOx8GA.js  127.78 kB │ gzip: 25.06 kB
+2026-07-08T03:05:45.1411897Z dist/client/assets/core-n21wkbqM.js                184.21 kB │ gzip: 60.83 kB
+2026-07-08T03:05:45.1413218Z dist/client/assets/index-OPsj8fM2.js               204.91 kB │ gzip: 48.26 kB
+2026-07-08T03:05:45.1413832Z 
+2026-07-08T03:05:45.1414239Z [32m✓ built in 9.22s[39m
+2026-07-08T03:05:45.3135104Z Prerendering static pages...
+2026-07-08T03:05:46.0244794Z Building Server...
+2026-07-08T03:05:59.3274465Z [info] Generated [36mdist/analog/_routes.json[39m
+2026-07-08T03:05:59.3279850Z [info] Generated [36mdist/analog/_headers[39m
+2026-07-08T03:05:59.3285157Z [info] Generated [36mdist/analog/_redirects[39m
+2026-07-08T03:05:59.3288182Z 
+2026-07-08T03:05:59.3288464Z 
+2026-07-08T03:05:59.3288999Z The '@analogjs/platform' server has been successfully built.

@@ -1,0 +1,73 @@
+﻿2026-07-08T03:05:19.2550870Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-08T03:05:19.2558585Z ##[group]Run actions/checkout@v4
+2026-07-08T03:05:19.2559192Z with:
+2026-07-08T03:05:19.2559662Z   repository: SpicyFerret/personal-website-v2
+2026-07-08T03:05:19.2563535Z   token: ***
+2026-07-08T03:05:19.2563962Z   ssh-strict: true
+2026-07-08T03:05:19.2564394Z   ssh-user: git
+2026-07-08T03:05:19.2564841Z   persist-credentials: true
+2026-07-08T03:05:19.2565601Z   clean: true
+2026-07-08T03:05:19.2566089Z   sparse-checkout-cone-mode: true
+2026-07-08T03:05:19.2566622Z   fetch-depth: 1
+2026-07-08T03:05:19.2567050Z   fetch-tags: false
+2026-07-08T03:05:19.2567497Z   show-progress: true
+2026-07-08T03:05:19.2567947Z   lfs: false
+2026-07-08T03:05:19.2568357Z   submodules: false
+2026-07-08T03:05:19.2568840Z   set-safe-directory: true
+2026-07-08T03:05:19.2569317Z ##[endgroup]
+2026-07-08T03:05:19.3514583Z Syncing repository: SpicyFerret/personal-website-v2
+2026-07-08T03:05:19.3517796Z ##[group]Getting Git version info
+2026-07-08T03:05:19.3519331Z Working directory is '/home/runner/work/personal-website-v2/personal-website-v2'
+2026-07-08T03:05:19.3521892Z [command]/usr/bin/git version
+2026-07-08T03:05:19.3614787Z git version 2.54.0
+2026-07-08T03:05:19.3670028Z ##[endgroup]
+2026-07-08T03:05:19.3686870Z Temporarily overriding HOME='/home/runner/work/_temp/5a8855b7-d615-40dc-b6eb-3051c3cf38b9' before making global git config changes
+2026-07-08T03:05:19.3689858Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-08T03:05:19.3693154Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/personal-website-v2/personal-website-v2
+2026-07-08T03:05:19.3766699Z Deleting the contents of '/home/runner/work/personal-website-v2/personal-website-v2'
+2026-07-08T03:05:19.3769382Z ##[group]Initializing the repository
+2026-07-08T03:05:19.3771067Z [command]/usr/bin/git init /home/runner/work/personal-website-v2/personal-website-v2
+2026-07-08T03:05:19.3877745Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-07-08T03:05:19.3879409Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-07-08T03:05:19.3880932Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-07-08T03:05:19.3882119Z hint: call:
+2026-07-08T03:05:19.3882912Z hint:
+2026-07-08T03:05:19.3883713Z hint: 	git config --global init.defaultBranch <name>
+2026-07-08T03:05:19.3884794Z hint:
+2026-07-08T03:05:19.3885949Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-07-08T03:05:19.3887678Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-07-08T03:05:19.3889544Z hint:
+2026-07-08T03:05:19.3890593Z hint: 	git branch -m <name>
+2026-07-08T03:05:19.3891863Z hint:
+2026-07-08T03:05:19.3893465Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-07-08T03:05:19.3896375Z Initialized empty Git repository in /home/runner/work/personal-website-v2/personal-website-v2/.git/
+2026-07-08T03:05:19.3907823Z [command]/usr/bin/git remote add origin https://github.com/SpicyFerret/personal-website-v2
+2026-07-08T03:05:19.3951361Z ##[endgroup]
+2026-07-08T03:05:19.3952568Z ##[group]Disabling automatic garbage collection
+2026-07-08T03:05:19.3957591Z [command]/usr/bin/git config --local gc.auto 0
+2026-07-08T03:05:19.3990270Z ##[endgroup]
+2026-07-08T03:05:19.3991480Z ##[group]Setting up auth
+2026-07-08T03:05:19.3998316Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-08T03:05:19.4034963Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-08T03:05:19.4394864Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-08T03:05:19.4428794Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-08T03:05:19.4651155Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-08T03:05:19.4686269Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-07-08T03:05:19.4907042Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-07-08T03:05:19.4944084Z ##[endgroup]
+2026-07-08T03:05:19.4944897Z ##[group]Fetching the repository
+2026-07-08T03:05:19.4956014Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +a3b1b2dc12336f18ace3d203d0cd7e84f7378f6f:refs/remotes/origin/main
+2026-07-08T03:05:20.0274296Z From https://github.com/SpicyFerret/personal-website-v2
+2026-07-08T03:05:20.0277094Z  * [new ref]         a3b1b2dc12336f18ace3d203d0cd7e84f7378f6f -> origin/main
+2026-07-08T03:05:20.0311370Z ##[endgroup]
+2026-07-08T03:05:20.0313489Z ##[group]Determining the checkout info
+2026-07-08T03:05:20.0316508Z ##[endgroup]
+2026-07-08T03:05:20.0321400Z [command]/usr/bin/git sparse-checkout disable
+2026-07-08T03:05:20.0370101Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-07-08T03:05:20.0400943Z ##[group]Checking out the ref
+2026-07-08T03:05:20.0406690Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-07-08T03:05:20.0516428Z Switched to a new branch 'main'
+2026-07-08T03:05:20.0519801Z branch 'main' set up to track 'origin/main'.
+2026-07-08T03:05:20.0527021Z ##[endgroup]
+2026-07-08T03:05:20.0571596Z [command]/usr/bin/git log -1 --format=%H
+2026-07-08T03:05:20.0604066Z a3b1b2dc12336f18ace3d203d0cd7e84f7378f6f

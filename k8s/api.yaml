@@ -35,7 +35,8 @@ spec:
       containers:
         - name: api
           # CI replaces the tag via `kubectl set image` on each deploy.
-          image: ghcr.io/OWNER/personal-website-api:latest
+          # NOTE: must be lowercase (image refs reject uppercase).
+          image: ghcr.io/spicyferret/personal-website-api:latest
           ports:
             - containerPort: 8080
           env:

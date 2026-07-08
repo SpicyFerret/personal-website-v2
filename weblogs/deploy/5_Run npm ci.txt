@@ -1,0 +1,25 @@
+﻿2026-07-08T03:05:21.0492922Z ##[group]Run npm ci
+2026-07-08T03:05:21.0493437Z [36;1mnpm ci[0m
+2026-07-08T03:05:21.0535208Z shell: /usr/bin/bash -e {0}
+2026-07-08T03:05:21.0536058Z ##[endgroup]
+2026-07-08T03:05:23.1890787Z npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+2026-07-08T03:05:24.8796080Z npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+2026-07-08T03:05:24.9034503Z npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+2026-07-08T03:05:26.5240291Z npm warn deprecated tsconfck@3.1.6: unmaintained
+2026-07-08T03:05:26.8785742Z npm warn deprecated @angular/animations@22.0.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+2026-07-08T03:05:28.2762209Z npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-07-08T03:05:33.8161121Z 
+2026-07-08T03:05:33.8162054Z added 777 packages, and audited 779 packages in 13s
+2026-07-08T03:05:33.8162741Z 
+2026-07-08T03:05:33.8163056Z 178 packages are looking for funding
+2026-07-08T03:05:33.8163644Z   run `npm fund` for details
+2026-07-08T03:05:33.8452245Z 
+2026-07-08T03:05:33.8452882Z 8 vulnerabilities (5 low, 1 moderate, 2 high)
+2026-07-08T03:05:33.8453368Z 
+2026-07-08T03:05:33.8453836Z To address issues that do not require attention, run:
+2026-07-08T03:05:33.8454565Z   npm audit fix
+2026-07-08T03:05:33.8454843Z 
+2026-07-08T03:05:33.8455577Z To address all issues (including breaking changes), run:
+2026-07-08T03:05:33.8457426Z   npm audit fix --force
+2026-07-08T03:05:33.8457753Z 
+2026-07-08T03:05:33.8458023Z Run `npm audit` for details.

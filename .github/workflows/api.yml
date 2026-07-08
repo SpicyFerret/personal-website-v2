@@ -9,8 +9,15 @@ on:
       - '.github/workflows/api.yml'
   workflow_dispatch:
 
+# Image refs must be lowercase — github.repository_owner is "SpicyFerret",
+# which breaks kubectl set image (InvalidImageName). Keep it hardcoded.
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/personal-website-api
+  IMAGE: ghcr.io/spicyferret/personal-website-api
+
+# Never run two deploys at once (kubectl applies would race).
+concurrency:
+  group: api-deploy
+  cancel-in-progress: false
 
 jobs:
   build-test:
@@ -138,4 +145,4 @@ jobs:
           kubectl apply -f k8s/api.yaml
           kubectl apply -f k8s/cloudflared.yaml
           kubectl -n personal-website set image deployment/api api=${{ env.IMAGE }}:sha-${{ github.sha }}
-          kubectl -n personal-website rollout status deployment/api --timeout=180s
+          kubectl -n personal-website rollout status deployment/api --timeout=300s
