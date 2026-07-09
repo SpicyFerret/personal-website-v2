@@ -166,6 +166,37 @@ h3 {
   outline: 1px solid var(--pw-accent);
   border-radius: 4px;
 }
+/* Custom toolbar buttons: remove ONLY the text color / ONLY the background
+   (unlike "clean", which wipes every format). */
+.ql-snow.ql-toolbar button.ql-clear-color,
+.ql-snow.ql-toolbar button.ql-clear-bg {
+  width: auto;
+  padding: 0 5px;
+}
+.ql-snow.ql-toolbar button.ql-clear-color::after {
+  content: 'A';
+  font-weight: 700;
+  font-size: 14px;
+  color: currentColor;
+  text-decoration: line-through;
+  text-decoration-color: #dc2626;
+  text-decoration-thickness: 2px;
+}
+.ql-snow.ql-toolbar button.ql-clear-bg::after {
+  content: '';
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  background: linear-gradient(
+    to top right,
+    transparent calc(50% - 1px),
+    #dc2626 50%,
+    transparent calc(50% + 1px)
+  );
+}
 
 /* Markdown content rendering */
 .markdown-body h1,
