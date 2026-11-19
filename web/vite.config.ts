@@ -23,6 +23,17 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     analog({
+      // Gera o HTML destas rotas no build, servido como arquivo estático: sem
+      // render por request e sem espera de JS no primeiro paint. Só entram as
+      // rotas que não leem dados — /consultoria não chama a API e /contact só
+      // faz POST no envio.
+      //
+      // Home, blog, projetos e resume ficam de fora de propósito: o conteúdo
+      // delas vem do CMS via API, e congelá-lo no build faria as edições do
+      // admin só aparecerem no próximo deploy.
+      prerender: {
+        routes: ['/consultoria', '/contact'],
+      },
       nitro: {
         // Prod/SSR: the built server (incl. the Cloudflare worker) proxies /api → backend.
         routeRules: {
