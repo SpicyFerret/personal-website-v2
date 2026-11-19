@@ -1,4 +1,7 @@
 @use '@angular/material' as mat;
+// Paletas M3 geradas a partir do verde da marca (#0B7A5E) e do teal (#0E7490):
+//   ng generate @angular/material:theme-color
+@use 'theme-colors' as brand;
 
 // ---------------------------------------------------------------------------
 // Angular Material M3 theme with light-dark() tokens.
@@ -11,8 +14,8 @@ html {
 
   @include mat.theme((
     color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$violet-palette,
+      primary: brand.$primary-palette,
+      tertiary: brand.$tertiary-palette,
     ),
     typography: (
       plain-family: Inter,
@@ -34,8 +37,10 @@ html.dark {
 // ---------------------------------------------------------------------------
 :root {
   --pw-max-width: 1120px;
-  --pw-accent: light-dark(#2f6df6, #6c9bff);
-  --pw-accent-2: light-dark(#7c3aed, #a78bfa);
+  // Verde-petróleo da marca. O tom claro é só para o modo escuro: o verde
+  // escuro só alcança 3.6:1 sobre o fundo escuro, enquanto o claro dá 6.1:1.
+  --pw-accent: light-dark(#0b7a5e, #2fa583);
+  --pw-accent-2: light-dark(#0e7490, #5fd3ae);
   --pw-radius: 16px;
   --pw-bg: light-dark(#ffffff, #0e1117);
   --pw-surface: light-dark(#f6f8fc, #161b24);
